@@ -74,14 +74,64 @@ class WP_REST_Widget_Areas_Controller extends WP_REST_Controller {
 					'methods'             => WP_REST_Server::EDITABLE,
 					'callback'            => array( $this, 'update_item' ),
 					'permission_callback' => array( $this, 'update_item_permissions_check' ),
-					'args'                => array(
-						'id'      => $id_argument,
-						'content' => $content_argument,
-					),
+					'args'                => $this->get_endpoint_args_for_item_schema( WP_REST_Server::EDITABLE ),
 				),
 				'schema' => array( $this, 'get_public_item_schema' ),
 			)
 		);
+	}
+
+	/**
+	 * Retrieves the comment's schema, conforming to JSON Schema.
+	 *
+	 * @since 6.1.0
+	 *
+	 * @return array
+	 */
+	public function get_item_schema() {
+		$schema = array(
+			'$schema'    => 'http://json-schema.org/draft-04/schema#',
+			'title'      => 'widget-area',
+			'type'       => 'object',
+			'properties' => array(
+				'id'      => array(
+					'description' => __( 'Unique identifier for the object.' ),
+					'type'        => 'string',
+					'context'     => array( 'view', 'edit', 'embed' ),
+					'readonly'    => true,
+				),
+				'content' => array(
+					'description' => __( 'The content for the object.', 'gutenberg' ),
+					'type'        => 'object',
+					'context'     => array( 'view', 'edit', 'embed' ),
+					'arg_options' => array(
+						'sanitize_callback' => null,
+						'validate_callback' => null,
+					),
+					'properties'  => array(
+						'raw'           => array(
+							'description' => __( 'Content for the object, as it exists in the database.', 'gutenberg' ),
+							'type'        => 'string',
+							'context'     => array( 'view', 'edit', 'embed' ),
+						),
+						'rendered'      => array(
+							'description' => __( 'HTML content for the object, transformed for display.', 'gutenberg' ),
+							'type'        => 'string',
+							'context'     => array( 'view', 'edit', 'embed' ),
+							'readonly'    => true,
+						),
+						'block_version' => array(
+							'description' => __( 'Version of the content block format used by the object.', 'gutenberg' ),
+							'type'        => 'integer',
+							'context'     => array( 'view', 'edit', 'embed' ),
+							'readonly'    => true,
+						),
+					),
+				),
+			),
+		);
+
+		return $schema;
 	}
 
 	/**
